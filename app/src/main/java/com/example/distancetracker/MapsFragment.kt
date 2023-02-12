@@ -1,6 +1,7 @@
 package com.example.distancetracker
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.fragment.app.Fragment
 
 import android.os.Bundle
@@ -12,6 +13,8 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.distancetracker.databinding.FragmentMapsBinding
+import com.example.distancetracker.service.TrackerService
+import com.example.distancetracker.utils.Constants.ACTION_SERVICE_START
 import com.example.distancetracker.utils.ExtensionFunctions.disable
 import com.example.distancetracker.utils.ExtensionFunctions.hide
 import com.example.distancetracker.utils.ExtensionFunctions.show
@@ -102,10 +105,21 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
             }
 
             override fun onFinish() {
+                sendActionCommandToService(ACTION_SERVICE_START)
                 binding.txtTimer.hide()
             }
         }
         timer.start()
+    }
+
+    private fun sendActionCommandToService(action: String){
+        Intent(
+            requireContext(),
+            TrackerService::class.java
+        ).apply {
+            this.action = action
+            requireContext().startService(this)
+        }
     }
 
     override fun onMyLocationButtonClick(): Boolean {
