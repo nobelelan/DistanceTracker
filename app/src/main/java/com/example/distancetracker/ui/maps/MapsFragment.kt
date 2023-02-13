@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 
 import android.os.Bundle
 import android.os.CountDownTimer
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.delay
@@ -37,6 +39,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
     private val binding get() = _binding!!
 
     private lateinit var map: GoogleMap
+
+    private var locationList = mutableListOf<LatLng>()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -73,6 +78,16 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
             isTiltGesturesEnabled = false
             isCompassEnabled = false
             isScrollGesturesEnabled = false
+        }
+        observeTrackerService()
+    }
+
+    private fun observeTrackerService(){
+        TrackerService.locationList.observe(viewLifecycleOwner) {
+            if (it != null) {
+                locationList = it
+                Log.d("LocationList", locationList.toString())
+            }
         }
     }
 
