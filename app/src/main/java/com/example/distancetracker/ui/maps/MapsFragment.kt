@@ -18,7 +18,9 @@ import com.example.distancetracker.databinding.FragmentMapsBinding
 import com.example.distancetracker.service.TrackerService
 import com.example.distancetracker.ui.maps.MapsUtil.setCameraPosition
 import com.example.distancetracker.utils.Constants.ACTION_SERVICE_START
+import com.example.distancetracker.utils.Constants.ACTION_SERVICE_STOP
 import com.example.distancetracker.utils.ExtensionFunctions.disable
+import com.example.distancetracker.utils.ExtensionFunctions.enable
 import com.example.distancetracker.utils.ExtensionFunctions.hide
 import com.example.distancetracker.utils.ExtensionFunctions.show
 import com.example.distancetracker.utils.Permissions.hasBackgroundLocationPermission
@@ -59,7 +61,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
             btnStart.setOnClickListener {
                 onStartButtonClick()
             }
-            btnStop.setOnClickListener {  }
+            btnStop.setOnClickListener {
+                onStopButtonClicked()
+            }
             btnReset.setOnClickListener {  }
         }
 
@@ -92,6 +96,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
         TrackerService.locationList.observe(viewLifecycleOwner) {
             if (it != null) {
                 locationList = it
+                if (locationList.size > 1){
+                    binding.btnStop.enable()
+                }
                 drawPolyline()
                 followPolyline()
             }
@@ -134,6 +141,14 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
         }
     }
 
+    private fun onStopButtonClicked(){
+        stopForegroundService()
+        binding.apply {
+            btnStop.hide()
+            btnStart.show()
+        }
+    }
+
     private fun startCountDown() {
         binding.txtTimer.show()
         binding.btnStop.disable()
@@ -159,6 +174,11 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
             }
         }
         timer.start()
+    }
+
+    private fun stopForegroundService() {
+        binding.btnStart.disable()
+        sendActionCommandToService(ACTION_SERVICE_STOP)
     }
 
     private fun sendActionCommandToService(action: String){
