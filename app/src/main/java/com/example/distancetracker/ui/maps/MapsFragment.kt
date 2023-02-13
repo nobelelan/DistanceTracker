@@ -12,6 +12,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.example.distancetracker.R
 import com.example.distancetracker.databinding.FragmentMapsBinding
@@ -47,6 +48,9 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
     private val binding get() = _binding!!
 
     private lateinit var map: GoogleMap
+
+    private var startTime = 0L
+    private var stopTime = 0L
 
     private var locationList = mutableListOf<LatLng>()
 
@@ -102,6 +106,12 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
                 drawPolyline()
                 followPolyline()
             }
+        }
+        TrackerService.startTime.observe(viewLifecycleOwner) {
+            startTime = it
+        }
+        TrackerService.stopTime.observe(viewLifecycleOwner){
+            stopTime = it
         }
     }
 
