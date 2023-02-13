@@ -14,6 +14,8 @@ import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
+import com.example.distancetracker.ui.maps.MapsUtil
+import com.example.distancetracker.ui.maps.MapsUtil.calculateTheDistance
 import com.example.distancetracker.utils.Constants.ACTION_SERVICE_START
 import com.example.distancetracker.utils.Constants.ACTION_SERVICE_STOP
 import com.example.distancetracker.utils.Constants.LOCATION_FASTEST_UPDATE_INTERVAL
@@ -64,9 +66,18 @@ class TrackerService: LifecycleService() {
             result.locations.let { locations ->
                 for (location in locations){
                     updateLocationList(location)
+                    updateNotificationPeriodically()
                 }
             }
         }
+    }
+
+    private fun updateNotificationPeriodically() {
+        notification.apply {
+            setContentTitle("Distance Travelled")
+            setContentText(locationList.value?.let { calculateTheDistance(it) } + "km")
+        }
+        notificationManager.notify(NOTIFICATION_ID, notification.build())
     }
 
     private fun updateLocationList(location: Location){
