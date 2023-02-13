@@ -33,22 +33,19 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMarkerClickListener
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.ButtCap
-import com.google.android.gms.maps.model.JointType
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.Polyline
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
-class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickListener, EasyPermissions.PermissionCallbacks {
+class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickListener,
+    EasyPermissions.PermissionCallbacks, OnMarkerClickListener {
 
     private var _binding: FragmentMapsBinding? = null
     private val binding get() = _binding!!
@@ -62,6 +59,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
 
     private var locationList = mutableListOf<LatLng>()
     private var polylineList = mutableListOf<Polyline>()
+    private var markerList = mutableListOf<Marker>()
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
@@ -103,6 +101,7 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
         map = googleMap
         map.isMyLocationEnabled = true
         map.setOnMyLocationButtonClickListener(this)
+        map.setOnMarkerClickListener(this)
         map.uiSettings.apply {
             isZoomControlsEnabled = false
             isZoomGesturesEnabled = false
@@ -241,6 +240,13 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
                 bounds.build(), 100
             ), 2000, null
         )
+        addMarker(locationList.first())
+        addMarker(locationList.last())
+    }
+
+    private fun addMarker(position: LatLng){
+        val marker = map.addMarker(MarkerOptions().position(position))
+        marker?.let { markerList.add(it) }
     }
 
     private fun displayResults(){
@@ -268,15 +274,19 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
                 it.result.latitude,
                 it.result.longitude
             )
-            polylineList.forEach { polyline->
-                polyline.remove()
-            }
             map.animateCamera(
                 CameraUpdateFactory.newCameraPosition(
                     setCameraPosition(lastKnownLocation)
                 )
             )
+            polylineList.forEach { polyline->
+                polyline.remove()
+            }
+            markerList.forEach { marker->
+                marker.remove()
+            }
             locationList.clear()
+            markerList.clear()
             binding.apply {
                 btnReset.hide()
                 btnStart.show()
@@ -313,6 +323,10 @@ class MapsFragment : Fragment(), OnMapReadyCallback, OnMyLocationButtonClickList
 
     override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
         onStartButtonClick()
+    }
+
+    override fun onMarkerClick(p0: Marker): Boolean {
+        return true
     }
 
     override fun onDestroyView() {
