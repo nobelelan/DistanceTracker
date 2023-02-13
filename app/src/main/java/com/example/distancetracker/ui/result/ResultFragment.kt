@@ -1,5 +1,6 @@
 package com.example.distancetracker.ui.result
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -29,7 +30,20 @@ class ResultFragment : BottomSheetDialogFragment() {
             txtTime.text = args.result.time
         }
 
+        binding.btnShare.setOnClickListener {
+            shareResult()
+        }
+
         return binding.root
+    }
+
+    private fun shareResult() {
+        val shareIntent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, "I went ${args.result.distance}km in ${args.result.time}!")
+        }
+        startActivity(shareIntent)
     }
 
     override fun onDestroyView() {
